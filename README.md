@@ -37,7 +37,7 @@ MCP server wrapping the [Explee](https://explee.com) B2B data API. Gives AI agen
 ## Prerequisites
 
 - Node.js 18+
-- An [Explee API key](https://explee.com)
+- An [Explee API key](https://explee.com/api-keys)
 
 ## Setup
 
