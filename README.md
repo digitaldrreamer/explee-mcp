@@ -47,7 +47,7 @@ No local setup needed. Pass your Explee API key as a Bearer token when registeri
 ### Claude Code
 
 ```bash
-claude mcp add --transport http explee https://your-deployed-url.com/mcp \
+claude mcp add --transport http explee https://explee.drreamer.digital/mcp \
   --header "Authorization: Bearer YOUR_EXPLEE_API_KEY"
 ```
 
@@ -58,7 +58,7 @@ Or add manually to `.mcp.json` at your project root:
   "mcpServers": {
     "explee": {
       "type": "http",
-      "url": "https://your-deployed-url.com/mcp",
+      "url": "https://explee.drreamer.digital/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_EXPLEE_API_KEY"
       }
@@ -73,7 +73,7 @@ Codex reads the token from an environment variable rather than embedding it in t
 
 ```bash
 export EXPLEE_API_KEY=your_api_key_here
-codex mcp add explee --url https://your-deployed-url.com/mcp \
+codex mcp add explee --url https://explee.drreamer.digital/mcp \
   --bearer-token-env-var EXPLEE_API_KEY
 ```
 
@@ -81,7 +81,7 @@ Or add manually to `~/.codex/config.toml` (global) or `.codex/config.toml` (proj
 
 ```toml
 [mcp_servers.explee]
-url = "https://your-deployed-url.com/mcp"
+url = "https://explee.drreamer.digital/mcp"
 bearer_token_env_var = "EXPLEE_API_KEY"
 ```
 
