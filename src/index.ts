@@ -9,10 +9,7 @@ const PORT = Number(process.env.PORT ?? 3000);
 
 // ─── API Client ──────────────────────────────────────────────────────────────
 
-async function explee<T = unknown>(method: string, path: string, body?: unknown): Promise<T> {
-  const apiKey = process.env.EXPLEE_API_KEY;
-  if (!apiKey) throw new Error("EXPLEE_API_KEY environment variable is not set");
-
+async function explee<T = unknown>(apiKey: string, method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers: {
@@ -42,18 +39,21 @@ function fail(err: unknown): ToolResult {
   return { content: [{ type: "text", text: `Error: ${msg}` }], isError: true };
 }
 
-async function call(method: string, path: string, body?: unknown): Promise<ToolResult> {
-  try {
-    return ok(await explee(method, path, body));
-  } catch (err) {
-    return fail(err);
-  }
+function makeCall(apiKey: string) {
+  return async (method: string, path: string, body?: unknown): Promise<ToolResult> => {
+    try {
+      return ok(await explee(apiKey, method, path, body));
+    } catch (err) {
+      return fail(err);
+    }
+  };
 }
 
 // ─── Server Factory ──────────────────────────────────────────────────────────
 
-function createServer(): McpServer {
+function createServer(apiKey: string): McpServer {
   const server = new McpServer({ name: "explee", version: "1.0.0" });
+  const call = makeCall(apiKey);
 
   // ── Search ─────────────────────────────────────────────────────────────────
 
@@ -424,11 +424,21 @@ app.get("/health", (_req, res) => {
 });
 
 app.post("/mcp", async (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization ?? "";
+  const apiKey = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : process.env.EXPLEE_API_KEY ?? "";
+
+  if (!apiKey) {
+    res.status(401).json({ error: "Missing API key. Set Authorization: Bearer <your-explee-api-key> or EXPLEE_API_KEY env var." });
+    return;
+  }
+
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined, // stateless — no session pinning
   });
 
-  const server = createServer();
+  const server = createServer(apiKey);
 
   res.on("close", () => {
     transport.close().catch(() => {});
@@ -458,6 +468,6 @@ app.delete("/mcp", async (req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`Explee MCP server listening on http://localhost:${PORT}/mcp`);
   if (!process.env.EXPLEE_API_KEY) {
-    console.warn("Warning: EXPLEE_API_KEY is not set — all tool calls will fail");
+    console.log("No EXPLEE_API_KEY env var set — clients must supply Authorization: Bearer <key>");
   }
 });

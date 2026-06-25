@@ -36,10 +36,60 @@ MCP server wrapping the [Explee](https://explee.com) B2B data API. Gives AI agen
 
 ## Prerequisites
 
-- Node.js 18+
 - An [Explee API key](https://explee.com/api-keys)
 
-## Setup
+---
+
+## Option A — Use the hosted server (recommended)
+
+No local setup needed. Pass your Explee API key as a Bearer token when registering the server.
+
+### Claude Code
+
+```bash
+claude mcp add --transport http explee https://your-deployed-url.com/mcp \
+  --header "Authorization: Bearer YOUR_EXPLEE_API_KEY"
+```
+
+Or add manually to `.mcp.json` at your project root:
+
+```json
+{
+  "mcpServers": {
+    "explee": {
+      "type": "http",
+      "url": "https://your-deployed-url.com/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_EXPLEE_API_KEY"
+      }
+    }
+  }
+}
+```
+
+### Codex CLI
+
+Codex reads the token from an environment variable rather than embedding it in the command:
+
+```bash
+export EXPLEE_API_KEY=your_api_key_here
+codex mcp add explee --url https://your-deployed-url.com/mcp \
+  --bearer-token-env-var EXPLEE_API_KEY
+```
+
+Or add manually to `~/.codex/config.toml` (global) or `.codex/config.toml` (project):
+
+```toml
+[mcp_servers.explee]
+url = "https://your-deployed-url.com/mcp"
+bearer_token_env_var = "EXPLEE_API_KEY"
+```
+
+---
+
+## Option B — Run locally
+
+### Setup
 
 ```bash
 git clone https://github.com/digitaldrreamer/explee-mcp
@@ -48,7 +98,7 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` and set your API key:
+Edit `.env`:
 
 ```env
 EXPLEE_API_KEY=your_api_key_here
@@ -62,23 +112,23 @@ npm run build
 npm start
 ```
 
-The server listens at `http://localhost:3000/mcp`.
-
 For development with auto-reload:
 
 ```bash
 npm run dev
 ```
 
-## Adding to Claude Code
+The server listens at `http://localhost:3000/mcp`.
 
-Run this command to register the server at the project level:
+### Claude Code
 
 ```bash
 claude mcp add --transport http explee http://localhost:3000/mcp
 ```
 
-Or add it manually to `.mcp.json` at your project root:
+No `--header` needed — the server reads `EXPLEE_API_KEY` from its own `.env`.
+
+Or manually in `.mcp.json`:
 
 ```json
 {
@@ -91,32 +141,20 @@ Or add it manually to `.mcp.json` at your project root:
 }
 ```
 
-For a user-wide installation (available in all projects), add the same block to `~/.claude/settings.json` under the `mcpServers` key.
-
-## Adding to Codex CLI
-
-Add via the CLI:
+### Codex CLI
 
 ```bash
 codex mcp add explee --url http://localhost:3000/mcp
 ```
 
-Or add it manually to `~/.codex/config.toml` (global) or `.codex/config.toml` (project):
+Or manually in `.codex/config.toml`:
 
 ```toml
 [mcp_servers.explee]
 url = "http://localhost:3000/mcp"
 ```
 
-If the server requires an auth header, add:
-
-```toml
-[mcp_servers.explee]
-url = "http://localhost:3000/mcp"
-
-[mcp_servers.explee.headers]
-authorization = "Bearer your_token"
-```
+---
 
 ## Health check
 
